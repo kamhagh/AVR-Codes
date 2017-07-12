@@ -1,0 +1,39 @@
+#define F_CPU 14318182
+
+#define USART_BAUDRATE 9600
+#define BAUD_PRESCALE ((( F_CPU / ( USART_BAUDRATE * 16)))- 1)
+
+#include <avr/io.h>
+
+void serial_puts(char c);
+char serial_recive();
+
+void main(){
+
+	UCSRB |= 1 << RXEN | 1 << TXEN;
+	UCSRC |= 1 << URSEL | 1 << UCSZ0 |  1 << UCSZ2;
+
+	UBRRH = (BAUD_PRESCALE >> 8);
+	UBRRL = BAUD_PRESCALE;
+	
+	
+	while(1){
+
+         serial_puts('U');
+      } 
+}
+
+void serial_puts(char c)
+{
+
+	while((UCSRA & (1 << UDRE)) == 0);
+	UDR = c;
+
+}
+
+char serial_recive()
+{
+	while((UCSRA & (1 << RXC)) == 0);
+	return UDR;
+
+}

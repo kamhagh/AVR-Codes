@@ -1,0 +1,182 @@
+
+snesor write.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000d2  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  000000d2  00000146  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .stab         000006cc  00000000  00000000  00000148  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  3 .stabstr      00000097  00000000  00000000  00000814  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .comment      0000002f  00000000  00000000  000008ab  2**0
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000030  00000000  00000000  000008da  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   0000018f  00000000  00000000  0000090a  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 00000138  00000000  00000000  00000a99  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   000001bb  00000000  00000000  00000bd1  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  00000044  00000000  00000000  00000d8c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    0000011b  00000000  00000000  00000dd0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    0000003d  00000000  00000000  00000eeb  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 00000020  00000000  00000000  00000f28  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 47 00 	call	0x8e	; 0x8e <main>
+  64:	0c 94 67 00 	jmp	0xce	; 0xce <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <_Z8adc_readh>:
+{
+	// select the corresponding channel 0~7
+	// ANDing with '7' will always keep the value
+	// of 'ch' between 0 and 7
+	ch &= 0b00000111; // AND operation with 7
+	ADMUX |= ch;
+  6c:	97 b1       	in	r25, 0x07	; 7
+uint16_t adc_read(uint8_t ch)
+{
+	// select the corresponding channel 0~7
+	// ANDing with '7' will always keep the value
+	// of 'ch' between 0 and 7
+	ch &= 0b00000111; // AND operation with 7
+  6e:	87 70       	andi	r24, 0x07	; 7
+	ADMUX |= ch;
+  70:	98 2b       	or	r25, r24
+  72:	97 b9       	out	0x07, r25	; 7
+	// start single convertion
+	// write '1' to ADSC
+	ADCSRA |= (1<<ADSC);
+  74:	36 9a       	sbi	0x06, 6	; 6
+	// wait for convertion to complete
+	// ADSC becomes '0' again
+	// till then, run loop continuously
+	while(ADCSRA & (1<<ADSC));
+  76:	36 99       	sbic	0x06, 6	; 6
+  78:	fe cf       	rjmp	.-4      	; 0x76 <_Z8adc_readh+0xa>
+	return (ADC);
+  7a:	24 b1       	in	r18, 0x04	; 4
+  7c:	35 b1       	in	r19, 0x05	; 5
+}
+  7e:	82 2f       	mov	r24, r18
+  80:	93 2f       	mov	r25, r19
+  82:	08 95       	ret
+
+00000084 <_Z8adc_initv>:
+
+void adc_init()
+{
+	// AREF = AVcc
+	ADMUX = (1<<REFS0);
+  84:	80 e4       	ldi	r24, 0x40	; 64
+  86:	87 b9       	out	0x07, r24	; 7
+	// ADC Enable and prescaler of 128
+	// 16000000/128 = 125000
+	ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+  88:	87 e8       	ldi	r24, 0x87	; 135
+  8a:	86 b9       	out	0x06, r24	; 6
+  8c:	08 95       	ret
+
+0000008e <main>:
+uint16_t adc_read(uint8_t ch);
+void adc_init();
+
+int main(void)
+{
+	DDRD |= 1 << 4 | 1 << 5;
+  8e:	81 b3       	in	r24, 0x11	; 17
+  90:	80 63       	ori	r24, 0x30	; 48
+  92:	81 bb       	out	0x11, r24	; 17
+	
+	adc_init();
+  94:	0e 94 42 00 	call	0x84	; 0x84 <_Z8adc_initv>
+	
+	TCCR1A |= _BV(WGM10) | _BV(WGM12) | _BV(WGM11) | _BV(COM1B1) | _BV(COM1A1);
+  98:	8f b5       	in	r24, 0x2f	; 47
+  9a:	8b 6a       	ori	r24, 0xAB	; 171
+  9c:	8f bd       	out	0x2f, r24	; 47
+	TCCR1B |= _BV(CS11);
+  9e:	8e b5       	in	r24, 0x2e	; 46
+  a0:	82 60       	ori	r24, 0x02	; 2
+  a2:	8e bd       	out	0x2e, r24	; 46
+	OCR1A = 0;
+  a4:	1b bc       	out	0x2b, r1	; 43
+  a6:	1a bc       	out	0x2a, r1	; 42
+	OCR1B = 0;
+  a8:	19 bc       	out	0x29, r1	; 41
+  aa:	18 bc       	out	0x28, r1	; 40
+	
+    while(1)
+    {
+	   OCR1A = 0;
+  ac:	1b bc       	out	0x2b, r1	; 43
+  ae:	1a bc       	out	0x2a, r1	; 42
+	   OCR1B = adc_read(1);
+  b0:	81 e0       	ldi	r24, 0x01	; 1
+  b2:	0e 94 36 00 	call	0x6c	; 0x6c <_Z8adc_readh>
+  b6:	99 bd       	out	0x29, r25	; 41
+  b8:	88 bd       	out	0x28, r24	; 40
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+  ba:	2f e5       	ldi	r18, 0x5F	; 95
+  bc:	8a ee       	ldi	r24, 0xEA	; 234
+  be:	90 e0       	ldi	r25, 0x00	; 0
+  c0:	21 50       	subi	r18, 0x01	; 1
+  c2:	80 40       	sbci	r24, 0x00	; 0
+  c4:	90 40       	sbci	r25, 0x00	; 0
+  c6:	e1 f7       	brne	.-8      	; 0xc0 <main+0x32>
+  c8:	00 c0       	rjmp	.+0      	; 0xca <main+0x3c>
+  ca:	00 00       	nop
+  cc:	ef cf       	rjmp	.-34     	; 0xac <main+0x1e>
+
+000000ce <_exit>:
+  ce:	f8 94       	cli
+
+000000d0 <__stop_program>:
+  d0:	ff cf       	rjmp	.-2      	; 0xd0 <__stop_program>

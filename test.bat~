@@ -1,0 +1,3 @@
+avr-gcc -w -Os -DF_CPU=16000000UL -mmcu=atmega328 -c -o atmega328.o atmega328.c
+avr-gcc -w -mmcu=atmega328 atmega328.o -o atmega328
+avr-objcopy -O ihex -R .eeprom atmega328 atmega328.hex

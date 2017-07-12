@@ -1,0 +1,78 @@
+#define F_CPU 16000000ul
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+#include "lcd.h"
+
+# define USART_BAUDRATE 4800
+# define BAUD_PRESCALE ((( F_CPU / ( USART_BAUDRATE * 16UL ) ) ) - 1)
+
+char RB ;
+char tmp[20];
+int i = 0;
+int RC = 0;
+
+void usart_sends(char s[]);
+void uart_send(char s);
+char uart_recive();
+
+void main(){
+	UCSRB = (1 << RXEN ) | (1 << TXEN ) ;
+	UCSRC = (1 << URSEL ) | (1 << UCSZ0 ) | (1 << UCSZ1 ) ;
+	UCSRB |= (1 << RXCIE ) ;
+
+	UBRRH = ( BAUD_PRESCALE >> 8) ;	
+	UBRRL = BAUD_PRESCALE ;
+	sei();
+
+	lcd_init(LCD_DISP_ON_CURSOR);
+  lcd_clrscr();
+	lcd_home();
+
+	uart_sends("Hellow! ");
+	while(1)
+	{
+		if(RC==1)
+      {
+      RC=0;
+      lcd_wl("RC=1",0);
+      lcd_wl(tmp,0);
+      } 
+			lcd_puts(tmp)'
+	}
+}
+
+
+ISR(USART_RX_vect)
+{
+ string[i]=UDR;
+ UDR=tmp[i];
+ if(tmp[i++]=='\r')
+   {
+    RC=1;
+    tmp[i-1]=0;
+   }
+} 
+
+void uart_send(char s)
+{
+	while (( UCSRA & (1 << UDRE ) ) == 0);
+	UDR = s;
+}
+
+void uart_sends(char s[])
+{
+	int c;
+	for(c = 0;s[c] != 0x00;i++)
+	{
+		uart_send(s[c]);
+	}
+
+}
+
+char uart_recive()
+{
+	while(( UCSRA & (1 << RXC)) == 0);
+	return (UDR);
+}

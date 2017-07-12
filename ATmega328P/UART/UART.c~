@@ -1,0 +1,64 @@
+#define F_CPU 16000000
+
+#include <avr/io.h>
+#include <util/delay.h>
+#include <inttypes.h>
+#include <avr/interrupt.h>
+#include <string.h>
+
+
+#define Baud 38400
+#define Ubrr1 F_CPU/16/Baud-1
+char a;
+
+
+
+void transmit( unsigned char caract )
+{
+/* Wait for empty transmit buffer */
+while ( !( UCSRnA & (1<<UDREn)) )
+;
+/* Put data into buffer, sends the data */
+UDRn = data;
+}
+unsigned char receive( void )
+{
+   while (! (UCSRA & _BV(RXC)));
+   return UDR;
+}
+
+void USART_Init( unsigned int ubrr)
+{
+/*Set baud rate */
+UBRR0H = (unsigned char)(ubrr>>8);
+UBRR0L = (unsigned char)ubrr;
+Enable receiver and transmitter 
+UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+/* Set frame format: 8data, 2stop bit */
+UCSR0C = (1<<USBS0)|(3<<UCSZ00);
+}
+
+ISR(USART_RXC_vect)
+{
+a=receive(  );
+if(a >= 5){
+PORTD |= _BV(PD6);
+} else if( a >= 0) {
+PORTD &= ~_BV(PD6);
+}
+}
+
+int main (void)
+{
+Usart_init(Ubrr1);
+DDRD|=_BV(PD6);
+
+
+while(1)
+{
+transmit( 'U' );
+_delay_ms(250);
+}
+
+}
+

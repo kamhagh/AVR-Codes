@@ -1,0 +1,26 @@
+#define F_CPU 16000000ul
+
+#include <avr/io.>
+#include <avr/interrupt.h>
+
+# define USAR T_BAUDR_RATE 4800
+# define BAUD_PRESCALE ((( F_CPU / ( USART_B AUDRATE * 16 UL ) ) ) - 1)
+
+char ReceivedByte ;
+
+void main(){
+	UCSRB = (1 << RXEN ) | (1 << TXEN ) ;
+	UCSRC = (1 << URSEL ) | (1 << UCSZ0 ) | (1 << UCSZ1 ) ;
+	UCSRB |= (1 << RXCIE ) ;
+
+	UBRRH = ( BAUD_PRESCALE >> 8) ;	
+	UBRRL = BAUD_PRESCALE ;
+
+	sei();
+
+}
+
+ISR ( USART_RXC_vect , ISR_BLOCK )
+{
+	
+}
